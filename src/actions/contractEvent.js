@@ -1,5 +1,5 @@
 import { get } from "svelte/store";
-import { contract, characterNFT } from "../stores";
+import { contract, characterNFT, boss } from "../stores";
 import { transformCharacterData } from "../utils";
 
 async function handleCharacterNFTMinted(sender, tokenId, characterIndex) {
@@ -15,8 +15,17 @@ async function handleCharacterNFTMinted(sender, tokenId, characterIndex) {
   }
 }
 
-function handleAttackComplete(args) {
-  console.log("AttackCompleted: args", args);
+function handleAttackComplete(newBossHp, newPlayerHp) {
+  let $boss = get(boss);
+  let $characterNFT = get(characterNFT);
+
+  const bossHp = newBossHp.toNumber();
+  const playerHp = newPlayerHp.toNumber();
+
+  console.log(`AttackComplete: Boss Hp: ${bossHp} Player Hp: ${playerHp}`);
+
+  boss.set({ ...$boss, hp: bossHp });
+  characterNFT.set({ ...$characterNFT, hp: playerHp });
 }
 
 export function contractEvent(node) {

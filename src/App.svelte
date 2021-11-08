@@ -6,10 +6,17 @@
   import Toast from "./lib/Toast.svelte";
 
   import SelectCharacter from "./lib/SelectCharacter.svelte";
+  import Arena from "./lib/Arena.svelte";
 
   import { transformCharacterData } from "./utils";
   import { contractEvent } from "./actions/contractEvent";
-  import { contract, currentAccount, characterNFT, characters } from "./stores";
+  import {
+    contract,
+    currentAccount,
+    characterNFT,
+    characters,
+    boss,
+  } from "./stores";
 
   export let contractAbi;
   export let contractAddress;
@@ -44,6 +51,18 @@
     }
   }
 
+  async function getBoss() {
+    try {
+      console.log("Getting boss");
+      const bossTxn = await $contract.getBigBoss();
+      console.log("Boss:", bossTxn);
+      const transformedBoss = transformCharacterData(bossTxn);
+      boss.set(transformedBoss);
+    } catch (error) {
+      console.error("Something went wrong fetching boss:", error);
+    }
+  }
+
   async function fetchContract() {
     console.log("FetchContract");
     try {
@@ -58,8 +77,10 @@
 
       if (gameContract) {
         getDefaultCharacters();
+        getBoss();
       } else {
         console.log("characters exist", $characters);
+        console.log("boss exist", $boss);
       }
     } catch (error) {
       notifications.danger("Ooof! Please try again.", 3000);
@@ -106,22 +127,14 @@
       <p class="sub-text">Free Arrakis from Harkonnen rule!</p>
 
       {#if $currentAccount}
-        <div class="arrakis-bg">
-          <div class="connected-container">
-            {#if $characterNFT}
-              Show character
-            {:else}
-              <!-- Connected:
-              <a
-                target="_blank"
-                style="text-decoration: underline; color: white; width: 350px;"
-                href={`https://rinkeby.etherscan.io/address/${$currentAccount}`}
-              >
-                {$currentAccount}
-              </a> -->
+        <div class="connected-container">
+          {#if $characterNFT && $boss}
+            <Arena />
+          {:else}
+            <div class="arrakis-bg">
               <SelectCharacter />
-            {/if}
-          </div>
+            </div>
+          {/if}
         </div>
       {:else}
         <div class="connect-container">
