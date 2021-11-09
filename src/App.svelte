@@ -30,13 +30,13 @@
       console.log("User has character NFT");
       characterNFT.set(transformCharacterData(txn));
     } else {
-      console.log("No character NFT found");
+      console.log("User doesn't have a character NFT");
     }
   }
 
   async function getDefaultCharacters() {
     try {
-      console.log("Getting contract characters to mint");
+      console.log("Getting characters to mint");
 
       const charactersTxn = await $contract.getAllDefaultCharacters();
       console.log("charactersTxn:", charactersTxn);
@@ -74,14 +74,6 @@
         signer
       );
       contract.set(gameContract);
-
-      if (gameContract) {
-        getDefaultCharacters();
-        getBoss();
-      } else {
-        console.log("characters exist", $characters);
-        console.log("boss exist", $boss);
-      }
     } catch (error) {
       notifications.danger("Ooof! Please try again.", 3000);
     }
@@ -91,13 +83,18 @@
   async function handleConnectWallet() {
     console.log("ConnectWallet");
     const accounts = await ethereum.request({ method: "eth_requestAccounts" });
-    if (accounts.length) {
+    if (accounts.length > 0) {
       console.log("Connected ", accounts[0]);
       notifications.success("Wallet connected!", 3000);
       currentAccount.set(accounts[0]);
 
       if ($contract) {
+        getDefaultCharacters();
+        getBoss();
         fetchNFTMetaData();
+      } else {
+        console.log("characters exist", $characters);
+        console.log("boss exist", $boss);
       }
     }
   }
@@ -125,7 +122,6 @@
         ⚔️ The <span style="color:orangered">Beast</span> Slayer! ⚔️
       </p>
       <p class="sub-text">Free Arrakis from Harkonnen rule!</p>
-
       {#if $currentAccount}
         <div class="connected-container">
           {#if $characterNFT && $boss}

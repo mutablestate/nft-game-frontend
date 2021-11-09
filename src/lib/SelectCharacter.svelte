@@ -1,19 +1,25 @@
 <script>
+  import LoadingIndicator from "./LoadingIndicator.svelte";
   import { contract, characters } from "../stores";
+
+  let isMinting = false;
 
   async function handleMintCharacter(characterId) {
     try {
       if ($contract) {
+        isMinting = true;
         console.log("Minting character in progress...");
         const mintTxn = await $contract.mintCharacterNFT(characterId);
         await mintTxn.wait();
         console.log("mintTxn:", mintTxn);
+        isMinting = false;
         alert(
           `Your NFT is all done -- see it here: https://testnets.opensea.io/assets/${$contract}/${tokenId.toNumber()}`
         );
       }
     } catch (error) {
       console.warn("MintCharacterAction Error:", error);
+      isMinting = false;
     }
   }
 </script>
@@ -34,6 +40,18 @@
       </div>
     {/each}
   </div>
+  {#if isMinting}
+    <div class="loading">
+      <div class="indicator">
+        <LoadingIndicator />
+        <p>Minting In Progress...</p>
+      </div>
+      <img
+        src="https://media2.giphy.com/media/61tYloUgq1eOk/giphy.gif?cid=ecf05e47dg95zbpabxhmhaksvoy8h526f96k4em0ndvx078s&rid=giphy.gif&ct=g"
+        alt="Minting loading indicator"
+      />
+    </div>
+  {/if}
 </div>
 
 <style>
@@ -82,5 +100,27 @@
     color: white;
     font-weight: bold;
     font-size: 16px;
+  }
+
+  .select-character-container .loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 75px;
+  }
+
+  .select-character-container .loading .indicator {
+    display: flex;
+  }
+
+  .select-character-container .loading .indicator p {
+    font-weight: bold;
+    font-size: 28px;
+    padding-left: 5px;
+  }
+
+  .select-character-container .loading img {
+    width: 450px;
+    padding-top: 25px;
   }
 </style>

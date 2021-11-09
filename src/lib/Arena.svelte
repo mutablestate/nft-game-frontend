@@ -1,17 +1,27 @@
 <script>
+  import LoadingIndicator from "./LoadingIndicator.svelte";
   import { contract, boss, characterNFT } from "../stores";
+  import { notifications } from "../notifications";
 
   let attackState = "";
+  notifications.info(`${$boss.name}: ${$boss.taunt}`, 6000);
 
   async function handleAttack() {
     try {
       attackState = "attacking";
+      notifications.info(`${$characterNFT.name}: ${$characterNFT.taunt}`, 3000);
       console.log("Attacking boss...");
       const attackTxn = await $contract.attackBoss();
       await attackTxn.wait();
       console.log("attackTxn:", attackTxn);
       attackState = "hit";
+
+      notifications.success(
+        `${$characterNFT.name} hits for ${$characterNFT.attackDamage} HP!`,
+        3000
+      );
     } catch (error) {
+      notifications.danger("Ooof! Attack fails.", 3000);
       console.error("Error attacking boss:", error);
       attackState = "";
     }
@@ -59,6 +69,12 @@
           <span class="drop" />
         </span>
       </button>
+      {#if attackState === "attacking"}
+        <div class="loading-indicator">
+          <LoadingIndicator />
+          <p>Attacking ⚔️</p>
+        </div>
+      {/if}
     </div>
   </div>
 
@@ -115,7 +131,7 @@
     display: flex;
     flex-direction: column;
     justify-content: space-around;
-    margin-bottom: 50px;
+    margin-bottom: 32px;
   }
 
   .boss-container .boss-content {
@@ -131,6 +147,18 @@
     background-size: 600% 600%;
     animation: gradient-animation 8s ease infinite;
     margin-bottom: 25px;
+  }
+
+  .boss-container .loading-indicator {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-top: 25px;
+  }
+
+  .boss-container .loading-indicator p {
+    font-weight: bold;
+    font-size: 28px;
   }
 
   .title {
@@ -261,7 +289,7 @@
     object-fit: cover;
   }
 
-  .players-container .active-players {
+  /* .players-container .active-players {
     display: flex;
     flex-direction: column;
   }
@@ -301,7 +329,7 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-  }
+  } */
   .attack-container button {
     height: 60px;
     background-image: linear-gradient(135deg, #667eea 0%, #562983 100%);
